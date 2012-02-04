@@ -1,0 +1,75 @@
+<pcmlPojoMap version="1.0">
+  <struct name="struct_LINK-INTERNET-SESSION">
+  		<data 
+  			pcmlName="NRSESSID" 
+  			pojoFieldName="test.pcml_om.map.PojoStruct1.sessionId" />
+  		<data 
+  			pcmlName="NRUSERID" 
+  			pojoFieldName="test.pcml_om.map.PojoStruct1.userId" />
+  		<data 
+  			pcmlName="NRRETCODE" 
+  			pojoFieldName="test.pcml_om.map.PojoStruct1.returnCode" />
+  		<data 
+  			pcmlName="NRRETMSG" 
+  			pojoFieldName="test.pcml_om.map.PojoStruct1.returnMessage" />
+  </struct>
+
+  <struct name="struct_LINK-GEO-REC-OUT">
+ 		<data 
+ 			pcmlName="LINK-POLICYNO" 
+ 			pojoFieldName="test.pcml_om.map.PojoStruct3.state" />
+ 		<data 
+ 			pcmlName="LINK-INSURED-OUT" 
+ 			pojoFieldName="test.pcml_om.map.PojoStruct3.insured" 
+ 			convertToLegacy="test.pcml_om.map.PojoStruct2.upperCase" 
+ 			convertToPojo="test.pcml_om.map.PojoStruct2.mixedCase" />
+ 		<data 
+ 			pcmlName="LINK-STREET-OUT" 
+ 			pojoFieldName="test.pcml_om.map.PojoStruct3.street" />  
+ 		<data 
+ 			pcmlName="LINK-CITY" 
+ 			pojoFieldName="test.pcml_om.map.PojoStruct3.city" />
+ 		<data 
+ 			pcmlName="LINK-STATE" 
+ 			pojoFieldName="test.pcml_om.map.PojoStruct3.state" />
+ 		<data 
+ 			pcmlName="LINK-ZIP-OUT" 
+ 			pojoFieldName="test.pcml_om.map.PojoStruct3.zip" />
+ 		<data 
+ 			pcmlName="LINK-EFF-DATE" 
+ 			pojoFieldName="test.pcml_om.map.PojoStruct3.effectiveDate" 
+ 			pojoFormat="MM/dd/yy" 
+ 			legacyFormat="yyyyMMdd" />
+ 		<data 
+ 			pcmlName="LINK-EXP-DATE" 
+ 			pojoFieldName="test.pcml_om.map.PojoStruct3.expireDate" 
+ 			pojoFormat="MM/dd/yy" 
+ 			legacyFormat="yyyyMMdd" />
+ 		<data 
+ 			pcmlName="LINK-INSURED-AMOUNT" 
+ 			pojoFieldName="test.pcml_om.map.PojoStruct3.insuredAmount" 
+ 			pojoFormat="999999.99" />
+  </struct>
+	
+  <program name="OMTEST100" >  
+  		<data 
+  			pcmlName="LINK-INSURED-IN" 
+  			pojoFieldName="test.pcml_om.map.PojoStruct2.insured" 
+  			convertToLegacy="test.pcml_om.map.PojoStruct2.upperCase" 
+  			convertToPojo="test.pcml_om.map.PojoStruct2.mixedCase" />
+		<data 
+			pcmlName="LINK-STREET-IN" 
+			pojoFieldName="test.pcml_om.map.PojoStruct2.street" 
+			convertToLegacy="test.pcml_om.map.PojoStruct2.upperCase" 
+			convertToPojo="test.pcml_om.map.PojoStruct2.mixedCase" />
+  		<data 
+  			pcmlName="LINK-ZIP-IN" 
+  			pojoFieldName="test.pcml_om.map.PojoStruct2.zip" />
+		<data 
+			pcmlName="LINK-LOSS-DATE-IN" 
+			pojoFieldName="test.pcml_om.map.PojoStruct2.claimDate" 
+			pojoFormat="MM/dd/yy" 
+			legacyFormat="yyyyMMdd" />
+  </program>
+
+</pcmlPojoMap>

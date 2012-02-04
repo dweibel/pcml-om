@@ -1,0 +1,32 @@
+<pcml version="1.0">
+
+	<struct name="struct_LINK-INTERNET-SESSION">
+  		<data name="NRSESSID" type="char" length="50"/>
+  		<data name="NRUSERID" type="char" length="2"/>
+  		<data name="NRRETCODE" type="char" length="2"/>
+  		<data name="NRRETMSG" type="char" length="79"/>
+	</struct>
+
+  <struct name="struct_LINK-GEO-REC-OUT">
+ 		<data name="LINK-POLICYNO" type="char" length="7"/>  
+ 		<data name="LINK-INSURED-OUT" type="char" length="40"/>  
+ 		<data name="LINK-STREET-OUT" type="char" length="40"/>  
+ 		<data name="LINK-CITY" type="char" length="28"/>  
+ 		<data name="LINK-STATE" type="char" length="2"/>  
+ 		<data name="LINK-ZIP-OUT" type="char" length="5"/>  
+ 		<data name="LINK-EFF-DATE" type="zoned" length="8" precision="0"/>
+ 		<data name="LINK-EXP-DATE" type="zoned" length="8" precision="0"/>
+ 		<data name="LINK-INSURED-AMOUNT" type="zoned" length="10" precision="2"/>
+  </struct>
+
+
+ 	<program name="OMTEST100" path="/QSYS.LIB/DIRKTEST.LIB/OMTEST100.PGM">
+		<data name="LINK-INTERNET-SESSION" type="struct" struct="struct_LINK-INTERNET-SESSION" usage="inputoutput"/>
+  		<data name="LINK-INSURED-IN" type="char" length="40"/>	
+		<data name="LINK-STREET-IN" type="char" length="40"/>				
+  		<data name="LINK-ZIP-IN" type="char" length="5"/>
+		<data name="LINK-LOSS-DATE-IN" type="zoned" length="8" precision="0"/>				
+		<data name="LINK-GEO-REC-OUT" type="struct" struct="struct_LINK-GEO-REC-OUT" usage="inputoutput" count="50"/>
+	</program>	
+	
+</pcml>
