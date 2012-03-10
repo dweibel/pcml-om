@@ -7,7 +7,7 @@
   		<data name="NRRETMSG" type="char" length="79"/>
 	</struct>
 
-  <struct name="struct_LINK-GEO-REC-OUT">
+	<struct name="struct_LINK-GEO-REC-OUT">
  		<data name="LINK-POLICYNO" type="char" length="7"/>  
  		<data name="LINK-INSURED-OUT" type="char" length="40"/>  
  		<data name="LINK-STREET-OUT" type="char" length="40"/>  
@@ -17,7 +17,7 @@
  		<data name="LINK-EFF-DATE" type="zoned" length="8" precision="0"/>
  		<data name="LINK-EXP-DATE" type="zoned" length="8" precision="0"/>
  		<data name="LINK-INSURED-AMOUNT" type="zoned" length="10" precision="2"/>
-  </struct>
+	</struct>
 
 
  	<program name="OMTEST100" path="/QSYS.LIB/DIRKTEST.LIB/OMTEST100.PGM">
