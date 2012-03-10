@@ -1,10 +1,10 @@
 
 OVERVIEW:
 What is PCML?
-The Program Call Markup Language (PCML) is a tag language based on XML to help make Java calls into IBM iSeries programs.  PCML allows developers to fully describe the server programs called by Java applications.
+The Program Call Markup Language (PCML) is a tag language based on XML to help make Java calls into IBM iSeries programs.  PCML is a full description of the server programs called by Java applications.  Best of all, it can be generated from your COBOL or RPG compiler.
 
 What is the PCML Object Mapper?
-The pcml-om library allows the developer to map the parameters of the server programs to objects in Java.  The developer simply provides a mapping file and makes a single call the server program.  No more writing boiler-plate code, long lists of getters/setters, or repetitive data conversions. The library uses reflection to access and populate Java objects when making server calls.  
+The pcml-om library allows the developer to map the parameters of the server programs to objects in Java.  The developer simply provides a mapping file and makes a single call the server program.  No more writing boiler-plate code, long lists of getters/setters, or repetitive data conversions. The library uses reflection to access and populate your Java objects when making server calls.  
 
 Who Can Use the PCML Object Mapper?
 The pcml-om library is available to commercial, individual, and academic developers under a liberal open source license. The pcml-om code base is distributed to the public under the Academic Free License 3.0.

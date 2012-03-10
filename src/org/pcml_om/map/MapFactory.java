@@ -143,6 +143,10 @@ public class MapFactory {
 		if (precision.length() > 0) {
 			pe.setPrecision(Integer.parseInt(precision));
 		}
+		String count = data.getAttribute("count");
+		if (count.length() > 0) {
+			pe.setCount(Integer.parseInt(count));
+		}
 		return pe;
 	}
 	

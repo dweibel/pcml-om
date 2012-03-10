@@ -24,10 +24,25 @@ public class PcmlDao {
 	private PcmlPojoMap pcmlPojoMap;
 	private PojoConverter pojoConverter;
 	private PcmlConverter pcmlConverter;
+	private String pcmlDocName;
+	private ClassLoader pcmlClassLoader;
 
-	public PcmlDao(InputStream pcmlIs, InputStream pojoIs)
+	/**
+	 * Construct the PcmlDao object.  
+	 * @param pcmlDocName PCML document name without the .pcml extention
+	 * @param pcmlClassLoader ClassLoader for the PCML document
+	 * @param pojoDocName PCML-OM configuration file without the .xml extension
+	 * @param pojoClassLoader ClassLoader for the PCML-OM configuration file
+	 * @throws PcmlCallException when files are not found or errors occur reading the files
+	 */
+	public PcmlDao(	String pcmlDocName, ClassLoader pcmlClassLoader, 
+					String pojoDocName, ClassLoader pojoClassLoader)
 			throws PcmlCallException {
 		try {
+			this.pcmlDocName = pcmlDocName;
+			this.pcmlClassLoader = pcmlClassLoader; 
+			InputStream pcmlIs = pcmlClassLoader.getResourceAsStream(pcmlDocName + ".pcml");
+			InputStream pojoIs = pojoClassLoader.getResourceAsStream(pcmlDocName + ".xml");
 			pcmlPojoMap = MapFactory.getPcmlPojoMap(pcmlIs, pojoIs);
 			pojoConverter = new PojoConverter(
 					pcmlPojoMap.getDefaultDateFormat());
@@ -38,6 +53,13 @@ public class PcmlDao {
 		}
 	}
 
+	/**
+	 * Call an AS400 program
+	 * @param as400Connection
+	 * @param programName
+	 * @param args
+	 * @throws PcmlCallException
+	 */
 	public void callAs400(AS400 as400Connection, String programName,
 			Object... args) throws PcmlCallException {
 		if (args == null) {
@@ -79,7 +101,7 @@ public class PcmlDao {
 	public ProgramCallDocument getCallDocument(AS400 as400)
 			throws PcmlCallException {
 		try {
-			return new ProgramCallDocument(as400, "as400");
+			return new ProgramCallDocument(as400, pcmlDocName, pcmlClassLoader);
 		} catch (PcmlException pe) {
 			throw new PcmlCallException("Unable to create ProgramCallDocument",
 					pe);

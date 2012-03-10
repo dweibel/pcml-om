@@ -24,6 +24,8 @@ public class PcmlElement {
 	private String type = "";
 	private int length = 0;
 	private int precision = 0;
+	private int count = 0;
+	
 	private PojoElement pojoElement;
 	public String getName() {
 		return name;
@@ -52,6 +54,12 @@ public class PcmlElement {
 	}
 	public void setPrecision(int precision) {
 		this.precision = precision;
+	}
+	public int getCount() {
+		return count;
+	}
+	public void setCount(int count) {
+		this.count = count;
 	}
 	public PojoElement getPojoElement() {
 		return pojoElement;
