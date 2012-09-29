@@ -1,4 +1,4 @@
-package test.pcml_om;
+package org.pcml_om;
 
 import org.apache.log4j.BasicConfigurator;
 import org.junit.BeforeClass;
@@ -6,8 +6,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import test.pcml_om.map.TestMapFactory;
-import test.pcml_om.map.TestPojoReflectionHelper;
+import org.pcml_om.map.TestMapFactory;
+import org.pcml_om.map.TestPojoReflectionHelper;
 
 @RunWith(Suite.class)
 @SuiteClasses({ 

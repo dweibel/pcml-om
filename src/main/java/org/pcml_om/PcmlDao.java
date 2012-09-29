@@ -6,14 +6,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.pcml_om.map.PcmlPojoMap;
 import org.pcml_om.map.MapFactory;
 import org.pcml_om.map.PcmlElement;
+import org.pcml_om.map.PcmlPojoMap;
 import org.pcml_om.map.PojoElement;
 import org.pcml_om.util.LoggingUtil;
 
 import com.ibm.as400.access.AS400;
 import com.ibm.as400.access.AS400Message;
+import com.ibm.as400.access.BidiStringType;
 import com.ibm.as400.data.PcmlException;
 import com.ibm.as400.data.ProgramCallDocument;
 
@@ -35,19 +36,22 @@ public class PcmlDao {
 	 * @param pojoClassLoader ClassLoader for the PCML-OM configuration file
 	 * @throws PcmlCallException when files are not found or errors occur reading the files
 	 */
-	public PcmlDao(	String pcmlDocName, ClassLoader pcmlClassLoader, 
-					String pojoDocName, ClassLoader pojoClassLoader)
+	public PcmlDao(String pcmlDocName, ClassLoader pcmlClassLoader,
+			String pojoDocName, ClassLoader pojoClassLoader)
 			throws PcmlCallException {
+		this.pcmlDocName = pcmlDocName;
+		this.pcmlClassLoader = pcmlClassLoader;
+		InputStream pcmlIs = pcmlClassLoader.getResourceAsStream(pcmlDocName + ".pcml");
+		InputStream pojoIs = pojoClassLoader.getResourceAsStream(pojoDocName + ".xml");
+		if (pcmlIs==null) {
+			throw new PcmlCallException("Unable to find resource " + pcmlDocName + ".pcml");
+		} else if (pojoIs==null) {
+			throw new PcmlCallException("Unable to find resource " + pojoDocName + ".xml");
+		}
 		try {
-			this.pcmlDocName = pcmlDocName;
-			this.pcmlClassLoader = pcmlClassLoader; 
-			InputStream pcmlIs = pcmlClassLoader.getResourceAsStream(pcmlDocName + ".pcml");
-			InputStream pojoIs = pojoClassLoader.getResourceAsStream(pcmlDocName + ".xml");
 			pcmlPojoMap = MapFactory.getPcmlPojoMap(pcmlIs, pojoIs);
-			pojoConverter = new PojoConverter(
-					pcmlPojoMap.getDefaultDateFormat());
-			pcmlConverter = new PcmlConverter(
-					pcmlPojoMap.getDefaultDateFormat());
+			pojoConverter = new PojoConverter(pcmlPojoMap.getDefaultDateFormat());
+			pcmlConverter = new PcmlConverter(pcmlPojoMap.getDefaultDateFormat());
 		} catch (Exception e) {
 			throw new PcmlCallException("Unable to create As400Dao", e);
 		}
@@ -124,7 +128,7 @@ public class PcmlDao {
 			ProgramCallDocument pcDoc) throws PcmlException {
 		String name = pcmlElement.getName();
 		if (pcmlElement.getType() == PcmlElement.CHAR) {
-			pcDoc.setStringValue(name, "");
+			pcDoc.setStringValue(name, "", BidiStringType.DEFAULT);
 		} else if (pcmlElement.getType() == PcmlElement.BYTE) {
 			pcDoc.setValue(name, new byte[0]);
 		} else {

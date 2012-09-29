@@ -19,7 +19,7 @@ http://opensource.org/licenses/AFL-3.0
 INSTALL:
 Download pcml-om.jar and include it in your project.  Log4J 1.2 must also be included in your project.
 
-Modifying the PCML Object Matter:
+Modifying the PCML Object Mapper:
 The following libraries are required to compile this project.
 Log4J 1.2
 JUnit 4

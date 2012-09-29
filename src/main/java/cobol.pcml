@@ -1,0 +1,27 @@
+<pcml>
+	
+	<!-- program definitions -->
+	<program name="NETZIPCITY" path="/QSYS.LIB/VPIA.LIB/NETZIPCITY.PGM">
+	    <data name="LINK-ZIP-INFO" type="struct" struct="struct_LINK-ZIP-INFO" usage="inputoutput"/>
+	</program>
+
+	
+	<!-- structure definitions -->
+	<struct name="struct_LINK-ZIP-INFO">
+		<data name="NZSESSID" type="char" length="50"/>
+		<data name="NZREQTYPE" type="char" length="2"/>
+		<data name="NZRETCODE" type="char" length="2"/>
+		<data name="NZRETMSG" type="char" length="79"/>		
+		<data name="NZUSERCODE" type="char" length="2"/>				
+		<data name="NZUSERKEY" type="char" length="20"/>				
+		<data name="NZZIPCODE" type="zoned" length="5" precision="0"/>				
+		<data name="NZCITY" type="char" length="28"/>				
+		<data name="NZSTATE" type="char" length="2"/>				
+		<data name="NZAREA" type="zoned" length="3" precision="0"/>				
+		<data name="NZFIPS" type="zoned" length="5" precision="0"/>				
+		<data name="NZCOUNTY" type="char" length="25"/>				
+		<data name="NZTYPE" type="char" length="1"/>				
+		<data name="NZSUB" type="char" length="1"/>	
+	</struct>
+
+</pcml>	

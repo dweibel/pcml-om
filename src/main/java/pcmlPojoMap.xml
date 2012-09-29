@@ -1,0 +1,22 @@
+<pcmlPojoMap version="1.0">
+    <struct name="struct_LINK-ZIP-INFO">   
+        <data pcmlName="NZSESSID" 
+            pojoFieldName="com.vpia.uw.pcml.domain.ZipCity.sessionId" />
+        <data pcmlName="NZREQTYPE" 
+            pojoFieldName="com.vpia.uw.pcml.domain.ZipCity.reqType" />
+        <data pcmlName="NZRETCODE" 
+            pojoFieldName="com.vpia.uw.pcml.domain.ZipCity.retCode" />
+        <data pcmlName="NZRETMSG" 
+            pojoFieldName="com.vpia.uw.pcml.domain.ZipCity.retMsg" />
+        <data pcmlName="NZUSERCODE" 
+            pojoFieldName="com.vpia.uw.pcml.domain.ZipCity.userCode" />
+        <data pcmlName="NZUSERKEY" 
+            pojoFieldName="com.vpia.uw.pcml.domain.ZipCity.userKey" />
+        <data pcmlName="NZZIPCODE" 
+            pojoFieldName="com.vpia.uw.pcml.domain.ZipCity.zipCode" />
+        <data pcmlName="NZCITY" 
+            pojoFieldName="com.vpia.uw.pcml.domain.ZipCity.city" />
+        <data pcmlName="NZSTATE" 
+            pojoFieldName="com.vpia.uw.pcml.domain.ZipCity.state" />
+    </struct>
+</pcmlPojoMap>

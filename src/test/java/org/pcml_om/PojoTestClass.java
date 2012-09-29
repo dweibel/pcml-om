@@ -1,4 +1,4 @@
-package test.pcml_om;
+package org.pcml_om;
 
 public class PojoTestClass {
 	public byte scalarByte = 0;

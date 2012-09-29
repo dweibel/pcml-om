@@ -1,4 +1,4 @@
-package test.pcml_om.map;
+package org.pcml_om.map;
 
 public class PojoStruct3 {
 
