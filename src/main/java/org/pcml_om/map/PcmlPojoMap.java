@@ -29,7 +29,7 @@ public class PcmlPojoMap {
 		for (PcmlStruct struct : structCollection) {
 			String[] peNames = struct.getElementNames();
 			for (String peName : peNames) {
-				peList.add(struct.getElement(peName));
+				peList.add(struct.getElement(peName).clone(struct.getPreamble()));
 			}
 		}
 		PcmlElement[] pcmlElements = new PcmlElement[peList.size()];
@@ -40,13 +40,26 @@ public class PcmlPojoMap {
 	public PcmlElement[] getPcmlElements(String programName) {
 		return pcmlElementMap.get(programName);
 	}
-		
-	private String defaultDateFormat = "yyyyMMdd";
-	public void setDefaultDateFormat(String format) {
-		defaultDateFormat = format;
+	
+	private String defaultPcmlDateFmt = "yyyyMMdd";
+
+	public void setPcmlDefaultDateFormat(String format) {
+		defaultPcmlDateFmt = format;
 	}
-	public String getDefaultDateFormat() { 
-		return defaultDateFormat;
+
+	public String getPcmlDefaultDateFormat() {
+		return defaultPcmlDateFmt;
+	}
+
+//	private String defaultPojoDateFmt = "yyyyMMdd";
+	private String defaultPojoDateFmt = "MM/dd/yyyy";
+
+	public void setPojoDefaultDateFormat(String format) {
+		defaultPojoDateFmt = format;
+	}
+
+	public String getPojoDefaultDateFormat() {
+		return defaultPojoDateFmt;
 	}
 
 }

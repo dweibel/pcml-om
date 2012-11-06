@@ -9,10 +9,16 @@ import org.pcml_om.map.PcmlElement;
 import org.pcml_om.map.PojoElement;
 import org.pcml_om.map.PojoReflectionHelper;
 
-public class PojoConverter extends Converter {
+public class PojoConverter {
 
+	private String defaultDateFormat;
+	
 	public PojoConverter(String defaultDateFormat) {
-		super(defaultDateFormat);
+		this.defaultDateFormat = defaultDateFormat;
+	}
+
+	private boolean valid(String testStr) {
+		return (testStr!=null && testStr.length()> 0);
 	}
 
 
@@ -38,7 +44,6 @@ public class PojoConverter extends Converter {
 		return pojoResultVal;
 	}
 
-
 	private Object convertPojoValExplicit(PcmlElement pcmlElement, Object pojoVal) throws PcmlCallException {
 		Object val = null;
 		PojoElement pojoElement = pcmlElement.getPojoElement();
@@ -60,21 +65,36 @@ public class PojoConverter extends Converter {
 		if (!valid(dateFmt)) {
 			dateFmt = defaultDateFormat;
 		}
-		SimpleDateFormat sdf = new SimpleDateFormat(dateFmt);
-		String resultDate = sdf.format(pojoVal);
-		if (pcmlElement.getType().equals(PcmlElement.CHAR)) {
-			return resultDate;
+		if (pojoVal != null) {
+			SimpleDateFormat sdf = new SimpleDateFormat(dateFmt);
+			String resultDate = sdf.format(pojoVal);
+			if (pcmlElement.getType().equals(PcmlElement.CHAR)) {
+				return resultDate;
+			} else {
+				return new BigDecimal(resultDate);
+			}
 		} else {
-			return new BigDecimal(resultDate);
+			return new BigDecimal(0);
 		}
 	}
 
 	
 	private Object convertPojoStringVal(PcmlElement pcmlElement, String pojoVal) {
 		if (pcmlElement.getType().equals(PcmlElement.CHAR)) {
-			return pojoVal;
+			String result = pojoVal;
+			if (result==null) result = "";
+			return result;
 		} else {
-			return new BigDecimal(pojoVal);
+			BigDecimal bd = null;
+			if (pojoVal!=null) {
+				try {
+					bd = new BigDecimal(pojoVal);
+				} catch (Exception e) {}
+			}
+			if (bd==null) {
+				bd = new BigDecimal(0);
+			}
+			return bd;
 		}
 	}
 
@@ -110,4 +130,5 @@ public class PojoConverter extends Converter {
 		}
 		return val;
 	}
+
 }

@@ -50,10 +50,10 @@ public class PcmlDao {
 		}
 		try {
 			pcmlPojoMap = MapFactory.getPcmlPojoMap(pcmlIs, pojoIs);
-			pojoConverter = new PojoConverter(pcmlPojoMap.getDefaultDateFormat());
-			pcmlConverter = new PcmlConverter(pcmlPojoMap.getDefaultDateFormat());
+			pojoConverter = new PojoConverter(pcmlPojoMap.getPcmlDefaultDateFormat());
+			pcmlConverter = new PcmlConverter(pcmlPojoMap.getPcmlDefaultDateFormat());
 		} catch (Exception e) {
-			throw new PcmlCallException("Unable to create As400Dao", e);
+			throw new PcmlCallException("Unable to create PcmlDao", e);
 		}
 	}
 
@@ -70,7 +70,7 @@ public class PcmlDao {
 			throw new PcmlCallException("No Pojo object parameters");
 		}
 
-		if (!Converter.valid(programName)) {
+		if (programName==null || programName.length() < 1) {
 			throw new PcmlCallException("No program name");
 		}
 
@@ -81,7 +81,7 @@ public class PcmlDao {
 		}
 
 		ProgramCallDocument pcDoc = getCallDocument(as400Connection);
-		PcmlElement[] pcmlElements = pcmlPojoMap.getPcmlElements(programName);
+				PcmlElement[] pcmlElements = pcmlPojoMap.getPcmlElements(programName);
 		try {
 			setInputParameters(pcmlElements, objectMap, pcDoc);
 		} catch (PcmlCallException ace) {
@@ -126,7 +126,7 @@ public class PcmlDao {
 
 	private void initNullElement(PcmlElement pcmlElement,
 			ProgramCallDocument pcDoc) throws PcmlException {
-		String name = pcmlElement.getName();
+		String name = pcmlElement.getQualifiedName();
 		if (pcmlElement.getType() == PcmlElement.CHAR) {
 			pcDoc.setStringValue(name, "", BidiStringType.DEFAULT);
 		} else if (pcmlElement.getType() == PcmlElement.BYTE) {
@@ -152,7 +152,7 @@ public class PcmlDao {
 			logger.warn("Unable to retrieve value for "
 					+ pojoElement.getPojoFieldName());
 		} else {
-			pcDoc.setValue(pcmlElement.getName(), pojoVal);
+			pcDoc.setValue(pcmlElement.getQualifiedName(), pojoVal);
 		}
 	}
 
@@ -189,7 +189,7 @@ public class PcmlDao {
 				String classname = PojoElement.getClassName(classField);
 				Object pojoDao = objectMap.get(classname);
 				if (pojoDao != null) {
-					Object pcmlVal = pcDoc.getValue(pcmlElement.getName());
+					Object pcmlVal = pcDoc.getValue(pcmlElement.getQualifiedName());
 					pcmlConverter.get(pcmlElement, pcmlVal, pojoDao);
 				}
 			}

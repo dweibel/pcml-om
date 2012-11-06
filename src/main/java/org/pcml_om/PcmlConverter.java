@@ -1,5 +1,6 @@
 package org.pcml_om;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -8,13 +9,18 @@ import org.pcml_om.map.PcmlElement;
 import org.pcml_om.map.PojoElement;
 import org.pcml_om.map.PojoReflectionHelper;
 
-public class PcmlConverter extends Converter{
+public class PcmlConverter {
+	
 	private String defaultDateFormat;
 	
 	public PcmlConverter(String defaultDateFormat) {
-		super(defaultDateFormat);
+		this.defaultDateFormat = defaultDateFormat;
 	}
-	
+
+	private boolean valid(String testStr) {
+		return (testStr!=null && testStr.length()> 0);
+	}
+
 	public Object get(PcmlElement pcmlElement, Object pcmlVal, Object pojoDao)
 			throws PcmlCallException {
 		PojoElement pojoElement = pcmlElement.getPojoElement();
@@ -54,18 +60,25 @@ public class PcmlConverter extends Converter{
 		}
 		SimpleDateFormat sdf = new SimpleDateFormat(dateFmt);
 		Date pojoDate;
-		try {
-			pojoDate = sdf.parse(pcmlVal.toString());
-		} catch (ParseException e) {
-			throw new PcmlCallException("Unable to parse AS400 value to date: " +
-					pojoElement.getPcmlName() + " = " + pcmlVal.toString() +
-					", date format = " + dateFmt, e);
+		if (pcmlVal.toString().equals("0") || pcmlVal.toString().length() < dateFmt.length()) {
+			pojoDate = null;
+		} else {
+			try {
+				pojoDate = sdf.parse(pcmlVal.toString());
+			} catch (ParseException e) {
+				throw new PcmlCallException("Unable to parse AS400 value to date: " +
+						pojoElement.getPcmlName() + " = " + pcmlVal.toString() +
+						", date format = " + dateFmt, e);
+			}
 		}
 		setVal(pojoElement, pojoDao, pojoDate);
 	}
 
 	private void convertPcmlStringVal(PojoElement pojoElement, Object pcmlVal, Object pojoDao) throws PcmlCallException {
 		String pojoVal = pcmlVal.toString();
+		if (pojoVal.equals("0") && pcmlVal instanceof BigDecimal) {
+			pojoVal = "";
+		}
 		setVal(pojoElement, pojoDao, pojoVal);
 	}
 	

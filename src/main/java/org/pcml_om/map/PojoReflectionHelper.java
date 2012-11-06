@@ -28,6 +28,9 @@ public class PojoReflectionHelper {
 				classMap.put(classname, prc);
 			}
 			result = prc.getFieldType(fieldname);
+			if (result == null) {
+				logger.error(classname + " does not contain field named " + fieldname + '.');
+			}
 		} catch (ClassNotFoundException e) {
 			logger.error("Unable to load class " + classname, e);
 		}
@@ -41,7 +44,7 @@ public class PojoReflectionHelper {
 		
 		PojoReflectionClass(String className) throws ClassNotFoundException {
 			c = Class.forName(className);
-			fieldList = c.getFields();
+			fieldList = c.getDeclaredFields();
 			methodList = c.getMethods();
 		}
 		

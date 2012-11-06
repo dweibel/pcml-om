@@ -20,6 +20,7 @@ public class PcmlElement {
 		typeSet.add(BYTE);
 	}
 	
+	private String preamble = "";
 	private String name = "";
 	private String type = "";
 	private int length = 0;
@@ -27,6 +28,15 @@ public class PcmlElement {
 	private int count = 0;
 	
 	private PojoElement pojoElement;
+	
+	public void setPreamble(String preamble) {
+		this.preamble = preamble;
+	}
+	
+	public String getQualifiedName() {
+		return preamble + name;
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -66,6 +76,18 @@ public class PcmlElement {
 	}
 	public void setPojoElement(PojoElement pojoElement) {
 		this.pojoElement = pojoElement;
+	}
+	
+	public PcmlElement clone(String preamble) {
+		PcmlElement result = new PcmlElement();
+		result.preamble = preamble;
+		result.count = this.count;
+		result.length = this.length;
+		result.name = this.name;
+		result.pojoElement = this.pojoElement;
+		result.precision = this.precision;
+		result.type = this.type;
+		return result;
 	}
 
 }
