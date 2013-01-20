@@ -1,5 +1,6 @@
 package org.pcml_om.map;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -111,9 +112,14 @@ public class PcmlElement {
 		result.pojoElement = this.pojoElement;
 		result.precision = this.precision;
 		result.type = this.type;
-		result.pcmlSubstruct = this.pcmlSubstruct;
-		result.pcmlSubstructName = this.pcmlSubstructName;
 		result.outputOnly = this.outputOnly;
+		if (STRUCT.equals(this.type) && this.pcmlSubstruct != null) {
+			result.pcmlSubstructName = this.pcmlSubstructName;
+			result.pcmlSubstruct = new ArrayList<PcmlElement>();
+			for (PcmlElement pe : pcmlSubstruct) {
+				result.pcmlSubstruct.add(pe.clone(preamble));
+			}
+		}
 		return result;
 	}
 
