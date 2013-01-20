@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +30,7 @@ public class MapFactory {
 	
 	// preliminary PCML structure map 
 	Map<String, List<PcmlElement>> pcmlStructMap = new HashMap<String, List<PcmlElement>>();
+	List<PcmlElement> repeatingElements = new ArrayList<PcmlElement>();
 
 	private MapFactory(InputStream pcmlIs, InputStream pojoIs) throws ParserConfigurationException, SAXException, IOException {
 		pcmlDoc = getDocument(pcmlIs);
@@ -37,6 +39,9 @@ public class MapFactory {
 		loadPcmlStructMap(pcmlDoc);
 		// load pojo elements into PCML structure map 
 		loadPojos(pojoDoc);
+		// after all structs have been loaded with their pojos, go back through the program elements with counts
+		// and load the repeating structs into their respective programs.
+		loadRepeatingStructs();
 	}
 	
 	/*
@@ -67,7 +72,20 @@ public class MapFactory {
 					if ("struct".equals(data.getAttribute("type"))) {
 						String progStructName = data.getAttribute("name");
 						String structName = data.getAttribute("struct");
-						PcmlStruct pcmlStruct = createPcmlStruct(progName, structName, progStructName);
+						PcmlStruct pcmlStruct = null;
+						String count = data.getAttribute("count");
+						if (count.length() == 0) {
+							pcmlStruct = createPcmlStruct(progName, structName, progStructName);
+						} else {
+							// repeating elements contain their own sub-elements
+							PcmlElement pe = findRepeatingElement(structName);
+							if (pe==null) {
+								throw new NullPointerException("Repeating PCML element " + structName +
+										" in program " + progName + " was not found");
+							}
+							PcmlElement[] peArray = { pe };
+							pcmlStruct = new PcmlStruct(progName, progStructName, peArray);
+						}
 						progStructMap.put(structName, pcmlStruct);
 					}
 				}
@@ -94,6 +112,19 @@ public class MapFactory {
 		return pcmlStruct;
 	}
 
+	private PcmlElement findRepeatingElement(String structName) {
+		PcmlElement result = null;
+		Iterator<PcmlElement> it = this.repeatingElements.iterator();
+		boolean found = false;
+		while (it.hasNext() && !found) {
+			PcmlElement pe = it.next();
+			if (pe.getPcmlSubstructName().equals(structName)) {
+				result = pe;
+			}
+		}
+		return result;
+	}
+
 	private void loadPcmlStructMap(Document doc) {
 		NodeList structNodes = doc.getElementsByTagName("struct");
 		loadPcmlStructs(structNodes, false);
@@ -116,8 +147,9 @@ public class MapFactory {
 				if (node!=null && node instanceof Element) {
 					Element data = (Element) node;
 					if (programNodes) {
-						// when processing program nodes, ignore elements where type="struct"
-						if (!"struct".equals(data.getAttribute("type"))) {
+						// when processing program nodes, ignore elements where type="struct" unless they are repeating
+						String count = data.getAttribute("count");
+						if (!"struct".equals(data.getAttribute("type")) || count.length() > 0 ) {
 							structElemList.add(getPcmlElement(data));
 						}
 					} else {
@@ -135,6 +167,9 @@ public class MapFactory {
 		PcmlElement pe = new PcmlElement();
 		pe.setName(data.getAttribute("name"));
 		pe.setType(data.getAttribute("type"));
+		if (pe.getType().equals(PcmlElement.STRUCT)) {
+			pe.setPcmlSubtructName(data.getAttribute("struct"));
+		}
 		String length = data.getAttribute("length");
 		if (length.length() > 0) {
 			pe.setLength(Integer.parseInt(length));
@@ -146,6 +181,11 @@ public class MapFactory {
 		String count = data.getAttribute("count");
 		if (count.length() > 0) {
 			pe.setCount(Integer.parseInt(count));
+			repeatingElements.add(pe);
+		}
+		String usage = data.getAttribute("usage");
+		if ("output".equals(usage)) {
+			pe.setOutputOnly();
 		}
 		return pe;
 	}
@@ -196,6 +236,25 @@ public class MapFactory {
 					" exists in the Pojo map but does not exist in the PCML");
 		}
 	}
+	
+	private void loadRepeatingStructs() {
+		for (PcmlElement pe : repeatingElements) {
+			String preamble = pe.getQualifiedName() + '.';
+			if (pe.getType().equals(PcmlElement.STRUCT)) {
+				List<PcmlElement> rawSubElements = this.pcmlStructMap.get(pe.getPcmlSubstructName());
+				if (rawSubElements == null) {
+					throw new NullPointerException("Error mapping " + pe.getName() + 
+							": cannot load structure" + pe.getPcmlSubstructName());
+				} else {
+					List<PcmlElement> qualifiedSubElements = new ArrayList<PcmlElement>();
+					for (PcmlElement rawSubElement : rawSubElements) {
+						qualifiedSubElements.add(rawSubElement.clone(preamble));
+					}
+					pe.setPcmlSubtruct(qualifiedSubElements);
+				}
+			}
+		}
+	}
 
 	private PcmlElement findElement(String pcmlName, List<PcmlElement> pcmlList) {
 		// linear search
@@ -215,7 +274,7 @@ public class MapFactory {
 		pe.setPojoFormat(data.getAttribute("pojoFormat"));
 		pe.setConvertToLegacy(data.getAttribute("convertToLegacy"));
 		pe.setLegacyFormat(data.getAttribute("legacyFormat"));
-		pe.setPojoFieldType(reflectionHelper.getType(pe.getPojoFieldName()));
+		pe.setPojoFieldType(reflectionHelper.getFieldType(pe.getPojoFieldName()));
 		return pe;
 	}
 	

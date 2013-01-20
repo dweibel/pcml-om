@@ -70,6 +70,10 @@
 			pojoFieldName="test.pcml_om.map.PojoStruct2.claimDate" 
 			pojoFormat="MM/dd/yy" 
 			legacyFormat="yyyyMMdd" />
+		<data 
+			pcmlName="LINK-GEO-REC-OUT"
+			pojoFieldName="test.pcml_om.map.PojoStruct2.geoRecords" />
+		
   </program>
 
 </pcmlPojoMap>

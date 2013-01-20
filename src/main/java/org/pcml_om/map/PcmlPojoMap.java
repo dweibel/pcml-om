@@ -51,7 +51,6 @@ public class PcmlPojoMap {
 		return defaultPcmlDateFmt;
 	}
 
-//	private String defaultPojoDateFmt = "yyyyMMdd";
 	private String defaultPojoDateFmt = "MM/dd/yyyy";
 
 	public void setPojoDefaultDateFormat(String format) {

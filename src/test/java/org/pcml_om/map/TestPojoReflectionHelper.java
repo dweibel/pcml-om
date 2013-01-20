@@ -21,7 +21,7 @@ public class TestPojoReflectionHelper {
 
 	@Test
 	public void testGetType() {
-		Object type = prh.getType(testClassField);
+		Object type = prh.getFieldType(testClassField);
 		assert(type instanceof String);
 	}
 

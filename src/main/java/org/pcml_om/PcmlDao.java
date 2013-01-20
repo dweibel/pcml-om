@@ -1,8 +1,10 @@
 package org.pcml_om;
 
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -10,6 +12,7 @@ import org.pcml_om.map.MapFactory;
 import org.pcml_om.map.PcmlElement;
 import org.pcml_om.map.PcmlPojoMap;
 import org.pcml_om.map.PojoElement;
+import org.pcml_om.map.PojoReflectionHelper;
 import org.pcml_om.util.LoggingUtil;
 
 import com.ibm.as400.access.AS400;
@@ -116,44 +119,135 @@ public class PcmlDao {
 			Map<String, Object> objectMap, ProgramCallDocument pcDoc)
 			throws PcmlException, PcmlCallException {
 		for (PcmlElement pcmlElement : pcmlElements) {
-			if (pcmlElement.getPojoElement() == null) {
-				initNullElement(pcmlElement, pcDoc);
-			} else {
-				initElement(pcmlElement, pcDoc, objectMap);
+			if (!pcmlElement.isOutputOnly()) {
+				if (pcmlElement.getPojoElement() == null) {
+					initNullElement(pcmlElement, pcDoc);
+				} else {
+					initElement(pcmlElement, pcDoc, objectMap);
+				}
 			}
 		}
 	}
 
 	private void initNullElement(PcmlElement pcmlElement,
 			ProgramCallDocument pcDoc) throws PcmlException {
-		String name = pcmlElement.getQualifiedName();
-		if (pcmlElement.getType() == PcmlElement.CHAR) {
-			pcDoc.setStringValue(name, "", BidiStringType.DEFAULT);
-		} else if (pcmlElement.getType() == PcmlElement.BYTE) {
-			pcDoc.setValue(name, new byte[0]);
+		if (pcmlElement.getCount() > 1) {
+			initRepeatingNullElement(pcmlElement, pcDoc);
 		} else {
-			pcDoc.setValue(name, new BigDecimal(0));
+			String name = pcmlElement.getQualifiedName();
+			if (pcmlElement.getType() == PcmlElement.CHAR) {
+				pcDoc.setStringValue(name, "", BidiStringType.DEFAULT);
+			} else if (pcmlElement.getType() == PcmlElement.BYTE) {
+				pcDoc.setValue(name, new byte[0]);
+			} else {
+				pcDoc.setValue(name, new BigDecimal(0));
+			}
+		}
+	}
+
+	private void initRepeatingNullElement(PcmlElement pcmlElement,
+			ProgramCallDocument pcDoc) throws PcmlException {
+		int count = pcmlElement.getCount();
+		List<PcmlElement> subElements = pcmlElement.getPcmlSubstruct();
+		int[] indices = new int[1];
+		for (int i = 0; i < count; i++) {
+			indices[0] = i;
+			for(PcmlElement subElement : subElements) {
+				initNullSubElement(subElement, indices, pcDoc);
+			}
+		}
+	}
+
+	private void initNullSubElement(PcmlElement subElement, int[] indices,
+			ProgramCallDocument pcDoc) throws PcmlException {
+		String name = subElement.getQualifiedName();
+		if (subElement.getType() == PcmlElement.CHAR) {
+			pcDoc.setStringValue(name, "", BidiStringType.DEFAULT);
+		} else if (subElement.getType() == PcmlElement.BYTE) {
+			pcDoc.setValue(name, indices, new byte[0]);
+		} else {
+			pcDoc.setValue(name, indices, new BigDecimal(0));
 		}
 	}
 
 	private void initElement(PcmlElement pcmlElement,
 			ProgramCallDocument pcDoc, Map<String, Object> objectMap)
 			throws PcmlException, PcmlCallException {
-		PojoElement pojoElement = pcmlElement.getPojoElement();
-		String classField = pojoElement.getPojoFieldName();
+		if (pcmlElement.getCount() > 1) {
+			initRepeatingElement(pcmlElement, pcDoc, objectMap);
+		} else {
+			PojoElement pojoElement = pcmlElement.getPojoElement();
+			String classField = pojoElement.getPojoFieldName();
+			String classname = PojoElement.getClassName(classField);
+			Object targetObj = objectMap.get(classname);
+			if (targetObj == null) {
+				throw new PcmlCallException("Missing input class: " + classname);
+			}
+			Object pojoVal = pojoConverter.get(pcmlElement, targetObj);
+			if (pojoVal == null) {
+				initNullElement(pcmlElement, pcDoc);
+				logger.warn("Unable to retrieve value for "
+						+ pojoElement.getPojoFieldName());
+			} else {
+				pcDoc.setValue(pcmlElement.getQualifiedName(), pojoVal);
+			}
+		}
+	}
+	
+	private void initRepeatingElement(PcmlElement pcmlElement,
+			ProgramCallDocument pcDoc, Map<String, Object> objectMap)
+			throws PcmlException, PcmlCallException {
+		// The repeating element must be mapped to an POJO array
+		// retrieve the array of repeating elements
+		PojoElement pojoContainerElement = pcmlElement.getPojoElement();
+		String classField = pojoContainerElement.getPojoFieldName();
 		String classname = PojoElement.getClassName(classField);
-		Object targetObj = objectMap.get(classname);
-		if (targetObj == null) {
+		Object targetContainerObj = objectMap.get(classname);
+		if (targetContainerObj == null) {
 			throw new PcmlCallException("Missing input class: " + classname);
 		}
-		Object pojoVal = pojoConverter.get(pcmlElement, targetObj);
-		if (pojoVal == null) {
-			initNullElement(pcmlElement, pcDoc);
-			logger.warn("Unable to retrieve value for "
-					+ pojoElement.getPojoFieldName());
-		} else {
-			pcDoc.setValue(pcmlElement.getQualifiedName(), pojoVal);
+		Object container = pojoConverter.get(pcmlElement, targetContainerObj);
+		Object[] containerArray = null;
+		try {
+			containerArray = (Object[]) container;
+		} catch (ClassCastException cce) {
+			throw new PcmlCallException("Repeating element " + pcmlElement.getQualifiedName() + 
+					" is not mapped to a POJO array");
 		}
+		
+		// iterate the repeating elements
+		int count = pcmlElement.getCount();
+		List<PcmlElement> subElementList = pcmlElement.getPcmlSubstruct();
+		PcmlElement[] subElements = new PcmlElement[subElementList.size()];
+		subElements = subElementList.toArray(subElements);
+		int[] indices = new int[1];
+		for (int i = 0; i < count; i++) {
+			indices[0] = i;
+			for(PcmlElement subElement : subElements) {
+				PojoElement pojoSubElement = subElement.getPojoElement();
+				Object targetElementObj = getElementObj(containerArray, i);
+				if (targetElementObj == null) {
+					initNullSubElement(subElement, indices, pcDoc);
+				} else {
+					Object pojoVal = pojoConverter.get(subElement, targetElementObj);
+					if (pojoVal == null) {
+						initNullSubElement(subElement, indices, pcDoc);
+						logger.warn("Unable to retrieve value for "
+								+ pojoSubElement.getPojoFieldName());
+					} else {
+						pcDoc.setValue(subElement.getQualifiedName(), indices, pojoVal);
+					}
+				}
+			}
+		}
+	}
+
+
+	private Object getElementObj(Object[] containerArray, int i) {
+		if (containerArray==null || containerArray.length <= i) {
+			return null;
+		}
+		return containerArray[i];
 	}
 
 	private void call(AS400 as400, ProgramCallDocument pcDoc, String programName)
@@ -181,18 +275,59 @@ public class PcmlDao {
 
 	private void setOutputParameters(PcmlElement[] pcmlElements,
 			Map<String, Object> objectMap, ProgramCallDocument pcDoc)
-			throws PcmlException, PcmlCallException {
+			throws PcmlException, PcmlCallException, SecurityException, IllegalArgumentException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, ClassNotFoundException, InstantiationException {
 		for (PcmlElement pcmlElement : pcmlElements) {
-			PojoElement pojoElement = pcmlElement.getPojoElement();
-			if (pojoElement != null) {
-				String classField = pojoElement.getPojoFieldName();
-				String classname = PojoElement.getClassName(classField);
-				Object pojoDao = objectMap.get(classname);
-				if (pojoDao != null) {
-					Object pcmlVal = pcDoc.getValue(pcmlElement.getQualifiedName());
-					pcmlConverter.get(pcmlElement, pcmlVal, pojoDao);
+			if (pcmlElement.getCount() > 1) {
+				setOutputRepeating(pcmlElement, objectMap, pcDoc);
+			} else {
+				PojoElement pojoElement = pcmlElement.getPojoElement();
+				if (pojoElement != null) {
+					String classname = pojoElement.getClassName();
+					Object pojoDao = objectMap.get(classname);
+					if (pojoDao != null) {
+						Object pcmlVal = pcDoc.getValue(pcmlElement.getQualifiedName());
+						pcmlConverter.get(pcmlElement, pcmlVal, pojoDao);
+					}
 				}
 			}
+		}
+	}
+
+	private void setOutputRepeating(PcmlElement pcmlElement,
+			Map<String, Object> objectMap, ProgramCallDocument pcDoc) 
+			throws PcmlException, PcmlCallException, SecurityException, IllegalArgumentException, NoSuchMethodException, 
+			IllegalAccessException, InvocationTargetException, ClassNotFoundException, InstantiationException {
+		PojoElement pojoElement = pcmlElement.getPojoElement();
+		if (pojoElement != null) {
+			Object[] containerArray = new Object[pcmlElement.getCount()];
+			// initialize array of sub-elements
+			List<PcmlElement> subElementList = pcmlElement.getPcmlSubstruct();
+			PcmlElement[] subElements = new PcmlElement[subElementList.size()];
+			subElements = subElementList.toArray(subElements);
+			
+			int count = pcmlElement.getCount();
+			int[] indices = new int[1];
+			for (int i = 0; i < count; i++) {
+				indices[0] = i;
+				Object pojoOut = null;
+				for(PcmlElement subElement : subElements) {
+					PojoElement pojoSubElement = subElement.getPojoElement();
+					// create new output item, if necessary
+					if (pojoOut == null) {
+						Class<?> pojoOutType = Class.forName(pojoSubElement.getClassName());
+						pojoOut = pojoOutType.newInstance();
+					}
+					Object pcmlVal = pcDoc.getValue(pcmlElement.getQualifiedName(), indices);
+					pcmlConverter.get(subElement, pcmlVal, pojoOut);
+				}
+				containerArray[i] = pojoOut;
+			}
+			
+			// set the resulting array into the output POJO
+			String fieldname = pojoElement.getPojoFieldName();
+			String classname = PojoElement.getClassName(fieldname);
+			Object pojoDao = objectMap.get(classname);
+			PojoReflectionHelper.setFieldValue(pojoDao, fieldname, containerArray, pojoElement.getPojoFieldType() );
 		}
 	}
 

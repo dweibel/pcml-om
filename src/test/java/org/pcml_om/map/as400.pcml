@@ -26,7 +26,7 @@
 		<data name="LINK-STREET-IN" type="char" length="40"/>				
   		<data name="LINK-ZIP-IN" type="char" length="5"/>
 		<data name="LINK-LOSS-DATE-IN" type="zoned" length="8" precision="0"/>				
-		<data name="LINK-GEO-REC-OUT" type="struct" struct="struct_LINK-GEO-REC-OUT" usage="inputoutput" count="50"/>
+		<data name="LINK-GEO-REC-OUT" type="struct" struct="struct_LINK-GEO-REC-OUT" usage="inputoutput" count="10"/>
 	</program>	
 	
 </pcml>

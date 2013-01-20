@@ -50,6 +50,12 @@ public class PojoElement {
 	public void setPojoFormat(String pojoFormat) {
 		this.pojoFormat = pojoFormat;
 	}
+	public String getClassName() {
+		return getClassName(pojoFieldName);
+	}
+	public String getFieldName() {
+		return getFieldName(pojoFieldName);
+	}
 	
 	public static String getClassName(String classField) {
 		return classField.substring(0, classField.lastIndexOf('.'));

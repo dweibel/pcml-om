@@ -1,6 +1,7 @@
 package org.pcml_om.map;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class PcmlElement {
@@ -10,6 +11,7 @@ public class PcmlElement {
 	public static final String ZONED = "zoned";
 	public static final String FLOAT = "float";
 	public static final String BYTE = "byte";
+	public static final String STRUCT = "struct";
 	private static final Set<String> typeSet = new HashSet<String>();
 	{
 		typeSet.add(CHAR);
@@ -18,6 +20,7 @@ public class PcmlElement {
 		typeSet.add(ZONED);
 		typeSet.add(FLOAT);
 		typeSet.add(BYTE);
+		typeSet.add(STRUCT);
 	}
 	
 	private String preamble = "";
@@ -25,9 +28,12 @@ public class PcmlElement {
 	private String type = "";
 	private int length = 0;
 	private int precision = 0;
-	private int count = 0;
-	
+	private int count = 1;
+	private boolean outputOnly = false;
+		
 	private PojoElement pojoElement;
+	private List<PcmlElement> pcmlSubstruct = null;
+	private String pcmlSubstructName = "";
 	
 	public void setPreamble(String preamble) {
 		this.preamble = preamble;
@@ -77,6 +83,24 @@ public class PcmlElement {
 	public void setPojoElement(PojoElement pojoElement) {
 		this.pojoElement = pojoElement;
 	}
+	public List<PcmlElement> getPcmlSubstruct() {
+		return pcmlSubstruct;
+	}
+	public void setPcmlSubtruct(List<PcmlElement> pcmlStruct) {
+		this.pcmlSubstruct = pcmlStruct;
+	}
+	public String getPcmlSubstructName() {
+		return pcmlSubstructName;
+	}
+	public void setPcmlSubtructName(String pcmlStructName) {
+		this.pcmlSubstructName = pcmlStructName;
+	}
+	public boolean isOutputOnly() {
+		return outputOnly;
+	}
+	public void setOutputOnly() {
+		this.outputOnly = true;
+	}
 	
 	public PcmlElement clone(String preamble) {
 		PcmlElement result = new PcmlElement();
@@ -87,6 +111,9 @@ public class PcmlElement {
 		result.pojoElement = this.pojoElement;
 		result.precision = this.precision;
 		result.type = this.type;
+		result.pcmlSubstruct = this.pcmlSubstruct;
+		result.pcmlSubstructName = this.pcmlSubstructName;
+		result.outputOnly = this.outputOnly;
 		return result;
 	}
 

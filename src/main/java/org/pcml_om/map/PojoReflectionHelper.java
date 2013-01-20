@@ -14,7 +14,7 @@ public class PojoReflectionHelper {
 	
 	private Map<String, PojoReflectionClass> classMap = new HashMap<String, PojoReflectionHelper.PojoReflectionClass>();
 	
-	public Class<?> getType (String classField) {
+	public Class<?> getFieldType (String classField) {
 		Class<?> result = null;
 		String classname = PojoElement.getClassName(classField);
 		String fieldname = PojoElement.getFieldName(classField);
@@ -94,7 +94,7 @@ public class PojoReflectionHelper {
 		return convertMethod.invoke(convertClass, value);
 	}
 	
-/* Experiments in type reflections
+/* Experiments in type reflections 
 	
 	public static void main(String args[]) {
 		try {
@@ -128,6 +128,7 @@ public class PojoReflectionHelper {
 		
 		public String string;
 		public String stringArray[];
+		public Object objArray[];
 	}
 
 	results:
@@ -147,6 +148,7 @@ public class PojoReflectionHelper {
 		objDouble: java.lang.Double
 		string: java.lang.String
 		stringArray: [Ljava.lang.String;
+		objArray: [Ljava.lang.Object;
 	
 */
 	

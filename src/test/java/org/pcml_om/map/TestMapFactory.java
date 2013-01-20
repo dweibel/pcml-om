@@ -1,6 +1,7 @@
 package org.pcml_om.map;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
@@ -41,13 +42,27 @@ public class TestMapFactory {
 		assert("test.pcml_om.map.PojoStruct2.mexedCase".equals(pojo.getConvertToPojo()));
 		ps = pcmlStructMap.get("struct_LINK-GEO-REC-OUT");
 		assert("OMTEST100.LINK-GEO-REC-OUT.".equals(ps.getPreamble()));
-		pe = ps.getElement("LINK-EXP-DATE");
+		PcmlElement repeatingPe = ps.getElement("LINK-GEO-REC-OUT");
+		assert(repeatingPe.getType().equals(PcmlElement.STRUCT));
+		assert(repeatingPe.getCount()==10);
+		pe = findElement("LINK-EXP-DATE", repeatingPe.getPcmlSubstruct());
+//		pe = ps.getElement("LINK-EXP-DATE");
 		pojo = pe.getPojoElement();
 		assert("test.pcml_om.map.PojoStruct3.expireDate".equals(pojo.getPojoFieldName()));
 		assert("MM/dd/yy".equals(pojo.getPojoFormat()));
 		assert("yyyyMMdd".equals(pojo.getLegacyFormat()));
 		PcmlElement[] peArray = pcmlPojoMap.getPcmlElements("OMTEST100");
 		assert(peArray.length == 7);
+	}
+
+	private PcmlElement findElement(String peName,
+			List<PcmlElement> pcmlSubstruct) {
+		for (PcmlElement pe : pcmlSubstruct) {
+			if (peName.equals(pe.getName())) {
+				return pe;
+			}
+		}
+		return null;
 	}
 	
 	/*
