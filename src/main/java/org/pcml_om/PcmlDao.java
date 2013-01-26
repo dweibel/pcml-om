@@ -3,6 +3,7 @@ package org.pcml_om;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,9 +136,9 @@ public class PcmlDao {
 			initRepeatingNullElement(pcmlElement, pcDoc);
 		} else {
 			String name = pcmlElement.getQualifiedName();
-			if (pcmlElement.getType() == PcmlElement.CHAR) {
+			if (pcmlElement.getType().equals(PcmlElement.CHAR)) {
 				pcDoc.setStringValue(name, "", BidiStringType.DEFAULT);
-			} else if (pcmlElement.getType() == PcmlElement.BYTE) {
+			} else if (pcmlElement.getType().equals(PcmlElement.BYTE)) {
 				pcDoc.setValue(name, new byte[0]);
 			} else {
 				pcDoc.setValue(name, new BigDecimal(0));
@@ -161,9 +162,9 @@ public class PcmlDao {
 	private void initNullSubElement(PcmlElement subElement, int[] indices,
 			ProgramCallDocument pcDoc) throws PcmlException {
 		String name = subElement.getQualifiedName();
-		if (subElement.getType() == PcmlElement.CHAR) {
-			pcDoc.setStringValue(name, "", BidiStringType.DEFAULT);
-		} else if (subElement.getType() == PcmlElement.BYTE) {
+		if (subElement.getType().equals(PcmlElement.CHAR)) {
+			pcDoc.setStringValue(name, indices, "", BidiStringType.DEFAULT);
+		} else if (subElement.getType().equals(PcmlElement.BYTE)) {
 			pcDoc.setValue(name, indices, new byte[0]);
 		} else {
 			pcDoc.setValue(name, indices, new BigDecimal(0));
@@ -200,13 +201,23 @@ public class PcmlDao {
 		// The repeating element must be mapped to an POJO array
 		// retrieve the array of repeating elements
 		PojoElement pojoContainerElement = pcmlElement.getPojoElement();
-		String classField = pojoContainerElement.getPojoFieldName();
-		String classname = PojoElement.getClassName(classField);
+		String fieldname = pojoContainerElement.getFieldName();
+		String classname = pojoContainerElement.getClassName();
 		Object targetContainerObj = objectMap.get(classname);
 		if (targetContainerObj == null) {
 			throw new PcmlCallException("Missing input class: " + classname);
 		}
-		Object container = pojoConverter.get(pcmlElement, targetContainerObj);
+		Object container;
+		try {
+			container = PojoReflectionHelper.getFieldValue(targetContainerObj, fieldname);
+		} catch (Exception e) {
+			throw new PcmlCallException("Unable to retrieve field " + 
+					fieldname + " from class " + classname, e);
+		}
+		if (container == null) {
+			initRepeatingNullElement(pcmlElement, pcDoc);
+			return;
+		}
 		Object[] containerArray = null;
 		try {
 			containerArray = (Object[]) container;
@@ -299,35 +310,49 @@ public class PcmlDao {
 			IllegalAccessException, InvocationTargetException, ClassNotFoundException, InstantiationException {
 		PojoElement pojoElement = pcmlElement.getPojoElement();
 		if (pojoElement != null) {
-			Object[] containerArray = new Object[pcmlElement.getCount()];
 			// initialize array of sub-elements
 			List<PcmlElement> subElementList = pcmlElement.getPcmlSubstruct();
 			PcmlElement[] subElements = new PcmlElement[subElementList.size()];
 			subElements = subElementList.toArray(subElements);
 			
-			int count = pcmlElement.getCount();
+			List<Object> outputList = new ArrayList<Object>();
+			int maxCount = pcmlElement.getCount();
 			int[] indices = new int[1];
-			for (int i = 0; i < count; i++) {
+			boolean finished = false;
+			for (int i = 0; i < maxCount && !finished; i++) {
 				indices[0] = i;
 				Object pojoOut = null;
+				boolean pojoValid = false;
 				for(PcmlElement subElement : subElements) {
 					PojoElement pojoSubElement = subElement.getPojoElement();
-					// create new output item, if necessary
-					if (pojoOut == null) {
-						Class<?> pojoOutType = Class.forName(pojoSubElement.getClassName());
-						pojoOut = pojoOutType.newInstance();
+					if (pojoSubElement != null) {
+						// create new output item, if necessary
+						if (pojoOut == null) {
+							Class<?> pojoOutType = Class.forName(pojoSubElement.getClassName());
+							pojoOut = pojoOutType.newInstance();
+						}
+						String testVal = pcDoc.getStringValue(subElement.getQualifiedName(), indices, BidiStringType.DEFAULT);
+						if (testVal != null && testVal.length() > 0) {
+							pojoValid = true;
+							Object pcmlVal = pcDoc.getValue(subElement.getQualifiedName(), indices);
+							pcmlConverter.get(subElement, pcmlVal, pojoOut);
+						}
 					}
-					Object pcmlVal = pcDoc.getValue(pcmlElement.getQualifiedName(), indices);
-					pcmlConverter.get(subElement, pcmlVal, pojoOut);
 				}
-				containerArray[i] = pojoOut;
-			}
-			
+				if (pojoValid) {
+					outputList.add(pojoOut);
+				} else {
+					finished = true;
+				}
+			}			
 			// set the resulting array into the output POJO
-			String fieldname = pojoElement.getPojoFieldName();
-			String classname = PojoElement.getClassName(fieldname);
-			Object pojoDao = objectMap.get(classname);
-			PojoReflectionHelper.setFieldValue(pojoDao, fieldname, containerArray, pojoElement.getPojoFieldType() );
+			Object[] containerArray = outputList.toArray();
+			Object pojoDao = objectMap.get(pojoElement.getClassName());
+			PojoReflectionHelper.setFieldValue(
+									pojoDao, 
+									pojoElement.getFieldName(), 
+									containerArray, 
+									pojoElement.getPojoFieldType() );
 		}
 	}
 

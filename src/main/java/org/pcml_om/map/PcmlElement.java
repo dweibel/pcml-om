@@ -117,7 +117,7 @@ public class PcmlElement {
 			result.pcmlSubstructName = this.pcmlSubstructName;
 			result.pcmlSubstruct = new ArrayList<PcmlElement>();
 			for (PcmlElement pe : pcmlSubstruct) {
-				result.pcmlSubstruct.add(pe.clone(preamble));
+				result.pcmlSubstruct.add(pe.clone(result.getQualifiedName() + "."));
 			}
 		}
 		return result;

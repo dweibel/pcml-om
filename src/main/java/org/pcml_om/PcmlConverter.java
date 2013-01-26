@@ -126,9 +126,7 @@ public class PcmlConverter {
 	}
 	
 	private void setVal(PojoElement pojoElement, Object targetObj, Object val) throws PcmlCallException {
-		String classField = pojoElement.getPojoFieldName();
-		String fieldname = PojoElement.getFieldName(classField);
-		setVal(targetObj, fieldname, val, pojoElement.getPojoFieldType());
+		setVal(targetObj, pojoElement.getFieldName(), val, pojoElement.getPojoFieldType());
 	}
 
 	private void setVal(Object targetObj, String fieldname, Object val, Class<?> valType) throws PcmlCallException {

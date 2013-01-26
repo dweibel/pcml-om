@@ -18,6 +18,9 @@ public class PcmlStruct {
 	public PcmlStruct(String programName, String structName, PcmlElement[] elements) {
 		if (structName.equals('[' + programName + ']')) {
 			preamble = programName + '.';
+		} else if (elements.length==1 || elements[0].getCount() > 1) {
+			// this is a repeating structure
+			preamble = programName + '.';
 		} else {
 			preamble = programName + '.' + structName + '.';
 		}
